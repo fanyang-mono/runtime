@@ -9125,6 +9125,48 @@ process_bb (EmitContext *ctx, MonoBasicBlock *bb)
 			case SIMD_OP_LLVM_I32ABS_SATURATE: id = INTRINS_AARCH64_ADV_SIMD_ABS_SATURATE_INT32; break;
 			case SIMD_OP_LLVM_I64ABS_SATURATE: id = INTRINS_AARCH64_ADV_SIMD_ABS_SATURATE_INT64; break;
 			case SIMD_OP_ARM64_SHA1H: id = INTRINS_AARCH64_SHA1H; getLowerElement = TRUE; break;
+			case SIMD_OP_ARM64_TRUNC_S:
+				if (LLVMGetElementType (LLVMTypeOf (lhs)) == LLVMDoubleType ())
+					id = INTRINS_AARCH64_TRUNC_V1F64;
+				else {
+					id = INTRINS_AARCH64_TRUNC_F32;
+					getLowerElement = TRUE;
+				}
+				break;
+			case SIMD_OP_ARM64_TRUNC_V:
+				if (mono_llvm_get_prim_size_bits (LLVMTypeOf (lhs)) == 128)
+					id = INTRINS_AARCH64_TRUNC_V4F32;
+				else
+					id = INTRINS_AARCH64_TRUNC_V2F32;
+				break;
+			case SIMD_OP_ARM64_CEIL_S:
+				if (LLVMGetElementType (LLVMTypeOf (lhs)) == LLVMDoubleType ())
+					id = INTRINS_AARCH64_CEIL_V1F64;
+				else {
+					id = INTRINS_AARCH64_CEIL_F32;
+					getLowerElement = TRUE;
+				}
+				break;
+			case SIMD_OP_ARM64_CEIL_V:
+				if (mono_llvm_get_prim_size_bits (LLVMTypeOf (lhs)) == 128)
+					id = INTRINS_AARCH64_CEIL_V4F32;
+				else
+					id = INTRINS_AARCH64_CEIL_V2F32;
+				break;
+			case SIMD_OP_ARM64_FLOOR_S:
+				if (LLVMGetElementType (LLVMTypeOf (lhs)) == LLVMDoubleType ())
+					id = INTRINS_AARCH64_FLOOR_V1F64;
+				else {
+					id = INTRINS_AARCH64_FLOOR_F32;
+					getLowerElement = TRUE;
+				}
+				break;
+			case SIMD_OP_ARM64_FLOOR_V:
+				if (mono_llvm_get_prim_size_bits (LLVMTypeOf (lhs)) == 128)
+					id = INTRINS_AARCH64_FLOOR_V4F32;
+				else
+					id = INTRINS_AARCH64_FLOOR_V2F32;
+				break;
 			default: g_assert_not_reached (); break;
 			}
 			LLVMValueRef arg0 = lhs;

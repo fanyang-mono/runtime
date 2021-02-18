@@ -869,6 +869,15 @@ static SimdIntrinsic advsimd_methods [] = {
 	{SN_AbsoluteCompareLessThanOrEqual}
 };
 
+static SimdIntrinsic advsimd_common_methods [] = {
+	{SN_RoundToZero, OP_XOP_X_X, SIMD_OP_ARM64_TRUNC_V},
+	{SN_RoundToZeroScalar, OP_XOP_X_X, SIMD_OP_ARM64_TRUNC_S},
+	{SN_RoundToPositiveInfinity, OP_XOP_X_X, SIMD_OP_ARM64_CEIL_V},
+	{SN_RoundToPositiveInfinityScalar, OP_XOP_X_X, SIMD_OP_ARM64_CEIL_S},
+	{SN_RoundToNegativeInfinity, OP_XOP_X_X, SIMD_OP_ARM64_FLOOR_V},
+	{SN_RoundToNegativeInfinityScalar, OP_XOP_X_X, SIMD_OP_ARM64_FLOOR_S}
+};
+
 static
 MonoInst *emit_absolute_compare (MonoCompile *cfg, MonoClass *klass, MonoMethodSignature *fsig, MonoTypeEnum arg0_type, MonoInst **args, SimdOp op_for_r4, SimdOp op_for_r8)
 {
@@ -982,6 +991,12 @@ emit_arm64_intrinsics (MonoCompile *cfg, MonoMethod *cmethod, MonoMethodSignatur
 		feature = MONO_CPU_ARM64_CRYPTO;
 		intrinsics = crypto_aes_methods;
 		intrinsics_size = sizeof (crypto_aes_methods);
+	}
+
+	if (is_hw_intrinsics_class (klass, "AdvSimd", &is_64bit)) {
+		feature = MONO_CPU_ARM64_ADVSIMD;
+		intrinsics = advsimd_common_methods;
+		intrinsics_size = sizeof (advsimd_common_methods);
 	}
 
 	/*
