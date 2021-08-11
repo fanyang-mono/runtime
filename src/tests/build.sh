@@ -55,7 +55,7 @@ build_ios_apps()
 {
     __RuntimeFlavor="mono" \
     __Exclude="$__RepoRootDir/src/tests/issues.targets" \
-    build_MSBuild_projects "Create_iOS_App" "$__RepoRootDir/src/tests/run.proj" "Create iOS Apps" "/t:BuildAlliOSApp"
+    build_MSBuild_projects "Create_iOS_App" "$__RepoRootDir/src/tests/run.proj" "Create iOS Apps" "/t:BuildAlliOSApp" "/p:RunAOTCompilation=$__IOSAot"
 }
 
 generate_layout()
@@ -512,6 +512,10 @@ handle_arguments_local() {
             __Mono=1
             __MonoAot=1
             ;;
+        
+        ios_aot|-ios_aot)
+            __IOSAot=true
+            ;;
 
         *)
             __UnprocessedBuildArgs+=("$1")
@@ -566,6 +570,7 @@ __CMakeArgs=""
 __priority1=
 __Mono=0
 __MonoAot=0
+__IOSAot=false
 CORE_ROOT=
 
 source $__RepoRootDir/src/coreclr/_build-commons.sh

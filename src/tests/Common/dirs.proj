@@ -21,9 +21,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <AllProjects Include="$(TestRoot)**\*.csproj" Exclude="@(DisabledProjects)" />
+      <!-- <AllProjects Include="$(TestRoot)**\*.csproj" Exclude="@(DisabledProjects)" />
       <AllProjects Include="$(TestRoot)**\*.fsproj" Exclude="@(DisabledProjects)" />
-      <AllProjects Include="$(TestRoot)**\*.ilproj" Exclude="@(DisabledProjects)" />
+      <AllProjects Include="$(TestRoot)**\*.ilproj" Exclude="@(DisabledProjects)" /> -->
+      <AllProjects Include="$(TestRoot)baseservices/mono/*.csproj" Exclude="@(DisabledProjects)" />
     </ItemGroup>
 
     <!-- All the test projects are partitioned into the test groups as defined below.

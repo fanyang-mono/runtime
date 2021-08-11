@@ -725,6 +725,9 @@ namespace $([System.String]::Copy($(Category)).Replace(".","_").Replace("\","").
       <AssemblyName>$(Category)</AssemblyName>
       <MicrosoftNetCoreAppRuntimePackDir>$(ArtifactsBinDir)microsoft.netcore.app.runtime.iossimulator-$(TargetArchitecture)/$(Configuration)/runtimes/iossimulator-$(TargetArchitecture)</MicrosoftNetCoreAppRuntimePackDir>
       <MicrosoftNetCoreAppRuntimePackNativeDir>$(MicrosoftNetCoreAppRuntimePackDir)/native</MicrosoftNetCoreAppRuntimePackNativeDir>
+      <MonoArtifactsPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'mono', '$(TargetOS).$(TargetArchitecture).$(Configuration)'))</MonoArtifactsPath>
+      <MonoAotCrossDir>$([MSBuild]::NormalizeDirectory('$(MonoArtifactsPath)', 'cross', $(TargetOS.ToLowerInvariant())-$(TargetArchitecture.ToLowerInvariant())))</MonoAotCrossDir>
+      <_MonoAotCrossCompilerPath>$([MSBuild]::NormalizePath($(MonoAotCrossDir), 'mono-aot-cross'))</_MonoAotCrossCompilerPath>
     </PropertyGroup>
     <ItemGroup>
       <AllTestScripts Include="$(_CMDDIR)\**\*.sh" />
@@ -747,7 +750,14 @@ namespace $([System.String]::Copy($(Category)).Replace(".","_").Replace("\","").
     </PropertyGroup>
     <ItemGroup>
       <RuntimePackNativeLibs Include="$(MicrosoftNetCoreAppRuntimePackDir)/**/*.dll;$(MicrosoftNetCoreAppRuntimePackDir)/native/**/*.a;$(MicrosoftNetCoreAppRuntimePackDir)/native/**/*.dylib" />
+      <MonoAotCrossCompiler Include="$(_MonoAotCrossCompilerPath)" RuntimeIdentifier="$(TargetOS.ToLowerInvariant())-$(TargetArchitecture.ToLowerInvariant())" />
     </ItemGroup>
+
+    <PropertyGroup>
+      <AOTMode Condition="'$(TargetOS)' != 'MacCatalyst'">Full</AOTMode>
+      <AOTMode Condition="'$(TargetOS)' == 'MacCatalyst' and '$(MonoForceInterpreter)' != 'true'">Full</AOTMode>
+      <AOTMode Condition="'$(TargetOS)' == 'MacCatalyst' and '$(MonoForceInterpreter)' == 'true'">JustInterp</AOTMode>
+    </PropertyGroup>
 
     <RemoveDir Directories="$(BundleDir)" />
     <RemoveDir Directories="$(BuildDir)" />
@@ -763,11 +773,40 @@ namespace $([System.String]::Copy($(Category)).Replace(".","_").Replace("\","").
         DestinationFolder="$(BuildDir)" />
     <Copy
         SourceFiles="%(TestDlls.Identity)"
-        DestinationFolder="$(BuildDir)/testdir-%(TestDlls.Filename)" />
+        DestinationFolder="$(BuildDir)" />
     <Copy
-        SourceFiles="%(ExtraDlls.Identity)"
-        DestinationFolder="$(BuildDir)/testdir-%(ExtraDlls.TestDllFilename)" />
+        SourceFiles="@(AssembliesInTestDirs)"
+        DestinationFolder="$(BuildDir)" />
 
+    <!-- <Message Importance="High" Text="~~~BuildDir: $(BuildDir)"/>
+    <Message Importance="High" Text="~~~BundleDir: $(BundleDir)"/>
+    <Message Importance="High" Text="~~~RunAOTCompilation: $(RunAOTCompilation)"/>
+    <Message Importance="High" Text="~~~MonoAotCrossDir: $(MonoAotCrossDir)"/> -->
+
+    <ItemGroup>
+      <BundleAssemblies Condition="'$(RunAOTCompilation)' != 'true'" Include="$(BuildDir)\*.dll" />
+      <AotInputAssemblies Condition="'$(RunAOTCompilation)' == 'true'" Include="$(BuildDir)\*.dll">
+        <AotArguments>@(MonoAOTCompilerDefaultAotArguments, ';')</AotArguments>
+        <ProcessArguments>@(MonoAOTCompilerDefaultProcessArguments, ';')</ProcessArguments>
+      </AotInputAssemblies>
+    </ItemGroup>
+
+    <!-- <Message Importance="High" Text="~~~BundleAssemblies: @(BundleAssemblies)"/> -->
+
+    <MonoAOTCompiler
+        Condition="'$(RunAOTCompilation)' == 'true'"
+        CompilerBinaryPath="@(MonoAotCrossCompiler->WithMetadataValue('RuntimeIdentifier','$(TargetOS.ToLowerInvariant())-$(TargetArchitecture.ToLowerInvariant())'))"
+        Mode="$(AOTMode)"
+        OutputType="AsmOnly"
+        Assemblies="@(AotInputAssemblies)"
+        AotModulesTablePath="$(BundleDir)\modules.m"
+        AotModulesTableLanguage="ObjC"
+        OutputDir="$(BuildDir)"
+        UseLLVM="true"
+        LLVMPath="$(MonoAotCrossDir)">
+        <Output TaskParameter="CompiledAssemblies" ItemName="BundleAssemblies" />
+    </MonoAOTCompiler>
+    
     <AppleAppBuilderTask
         TargetOS="$(TargetOS)"
         Arch="$(TargetArchitecture)"
@@ -787,6 +826,8 @@ namespace $([System.String]::Copy($(Category)).Replace(".","_").Replace("\","").
       <Output TaskParameter="AppBundlePath" PropertyName="AppBundlePath" />
       <Output TaskParameter="XcodeProjectPath" PropertyName="XcodeProjectPath" />
     </AppleAppBuilderTask>
+
+    <Message Importance="High" Text="~~~AppBundlePath: $(AppBundlePath)"/>
 
     <!-- Apparently MSBuild cannot move directories and recursively copying a
          a directory requires writing some sort of recursive traversal
