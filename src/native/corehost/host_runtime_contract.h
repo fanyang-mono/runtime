@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "PalRedhawk.h"
 
 #if defined(_WIN32)
     #define HOST_CONTRACT_CALLTYPE __stdcall
@@ -29,6 +30,13 @@ struct host_runtime_contract
 
     // Context for the contract. Pass to functions taking a contract context.
     void* context;
+
+    LPCWSTR nativeDllSearchDirectories;
+    LPCWSTR trustedPlatformAssemblies;
+    LPCWSTR platformResourceRoots;
+    LPCWSTR appPaths;
+    LPCWSTR defaultStackSize;
+    LPCWSTR useEntryPointFilter;
 
     // Get the value of a runtime property.
     // Returns the length of the property including a terminating null or -1 if not found.

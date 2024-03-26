@@ -339,6 +339,16 @@ int hostpolicy_context_t::initialize(const hostpolicy_init_t &hostpolicy_init, c
 #endif
         }
 
+        // TODO: need to call an api to convert char_t * to WCHAR * (LPCWSTR)
+        host_contract.nativeDllSearchDirectories = probe_paths.native.c_str();
+        host_contract.trustedPlatformAssemblies = probe_paths.tpa.c_str();
+        host_contract.platformResourceRoots = probe_paths.resources.c_str();
+        host_contract.appPaths = app_base.c_str();
+        // TODO: need to find the place the initialize these fields. Are they included
+        // in hostpolicy_init.cfg_keys?
+        // host_contract.defaultStackSize
+        // host_contract.useEntryPointFilter
+
         host_contract.get_runtime_property = &get_runtime_property;
         pal::char_t buffer[STRING_LENGTH("0xffffffffffffffff")];
         pal::snwprintf(buffer, ARRAY_SIZE(buffer), _X("0x%zx"), (size_t)(&host_contract));

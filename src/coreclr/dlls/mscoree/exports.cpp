@@ -318,6 +318,7 @@ int coreclr_initialize(
         propertyCount,
         propertyKeysW,
         propertyValuesW,
+        hostContract,
         (DWORD *)domainId);
 
     if (SUCCEEDED(hr))

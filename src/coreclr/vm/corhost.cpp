@@ -522,6 +522,7 @@ HRESULT CorHost2::CreateAppDomainWithManager(
     int nProperties,
     LPCWSTR* pPropertyNames,
     LPCWSTR* pPropertyValues,
+    host_runtime_contract* hostContract,
     DWORD* pAppDomainID)
 {
     CONTRACTL
@@ -584,45 +585,12 @@ HRESULT CorHost2::CreateAppDomainWithManager(
         setup.Call(args);
     }
 
-    LPCWSTR pwzNativeDllSearchDirectories = NULL;
-    LPCWSTR pwzTrustedPlatformAssemblies = NULL;
-    LPCWSTR pwzPlatformResourceRoots = NULL;
-    LPCWSTR pwzAppPaths = NULL;
-
-    for (int i = 0; i < nProperties; i++)
-    {
-        if (u16_strcmp(pPropertyNames[i], _T(HOST_PROPERTY_NATIVE_DLL_SEARCH_DIRECTORIES)) == 0)
-        {
-            pwzNativeDllSearchDirectories = pPropertyValues[i];
-        }
-        else
-        if (u16_strcmp(pPropertyNames[i], _T(HOST_PROPERTY_TRUSTED_PLATFORM_ASSEMBLIES)) == 0)
-        {
-            pwzTrustedPlatformAssemblies = pPropertyValues[i];
-        }
-        else
-        if (u16_strcmp(pPropertyNames[i], _T(HOST_PROPERTY_PLATFORM_RESOURCE_ROOTS)) == 0)
-        {
-            pwzPlatformResourceRoots = pPropertyValues[i];
-        }
-        else
-        if (u16_strcmp(pPropertyNames[i], _T(HOST_PROPERTY_APP_PATHS)) == 0)
-        {
-            pwzAppPaths = pPropertyValues[i];
-        }
-        else
-        if (u16_strcmp(pPropertyNames[i], W("DEFAULT_STACK_SIZE")) == 0)
-        {
-            extern void ParseDefaultStackSize(LPCWSTR value);
-            ParseDefaultStackSize(pPropertyValues[i]);
-        }
-        else
-        if (u16_strcmp(pPropertyNames[i], W("USE_ENTRYPOINT_FILTER")) == 0)
-        {
-            extern void ParseUseEntryPointFilter(LPCWSTR value);
-            ParseUseEntryPointFilter(pPropertyValues[i]);
-        }
-    }
+    LPCWSTR pwzNativeDllSearchDirectories = hostContract->nativeDllSearchDirectories;
+    LPCWSTR pwzTrustedPlatformAssemblies = hostContract->trustedPlatformAssemblies;
+    LPCWSTR pwzPlatformResourceRoots = hostContract->platformResourceRoots;
+    LPCWSTR pwzAppPaths = hostContract->appPaths;
+    ParseDefaultStackSize(hostContract->defaultStackSize);
+    ParseUseEntryPointFilter(hostContract->useEntryPointFilter);
 
     pDomain->SetNativeDllSearchDirectories(pwzNativeDllSearchDirectories);
 
