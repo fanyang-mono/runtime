@@ -103,7 +103,6 @@ public:
         int nProperties,
         LPCWSTR* pPropertyNames,
         LPCWSTR* pPropertyValues,
-        host_runtime_contract* hostContract,
         DWORD* pAppDomainID);
 
     STDMETHODIMP CreateDelegate(

@@ -522,7 +522,6 @@ HRESULT CorHost2::CreateAppDomainWithManager(
     int nProperties,
     LPCWSTR* pPropertyNames,
     LPCWSTR* pPropertyValues,
-    host_runtime_contract* hostContract,
     DWORD* pAppDomainID)
 {
     CONTRACTL
@@ -585,12 +584,12 @@ HRESULT CorHost2::CreateAppDomainWithManager(
         setup.Call(args);
     }
 
-    LPCWSTR pwzNativeDllSearchDirectories = hostContract->nativeDllSearchDirectories;
-    LPCWSTR pwzTrustedPlatformAssemblies = hostContract->trustedPlatformAssemblies;
-    LPCWSTR pwzPlatformResourceRoots = hostContract->platformResourceRoots;
-    LPCWSTR pwzAppPaths = hostContract->appPaths;
-    ParseDefaultStackSize(hostContract->defaultStackSize);
-    ParseUseEntryPointFilter(hostContract->useEntryPointFilter);
+    LPCWSTR pwzNativeDllSearchDirectories = s_hostContract->nativeDllSearchDirectories;
+    LPCWSTR pwzTrustedPlatformAssemblies = s_hostContract->trustedPlatformAssemblies;
+    LPCWSTR pwzPlatformResourceRoots = s_hostContract->platformResourceRoots;
+    LPCWSTR pwzAppPaths = s_hostContract->appPaths;
+    ParseDefaultStackSize(s_hostContract->defaultStackSize);
+    ParseUseEntryPointFilter(s_hostContract->useEntryPointFilter);
 
     pDomain->SetNativeDllSearchDirectories(pwzNativeDllSearchDirectories);
 
